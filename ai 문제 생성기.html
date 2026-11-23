@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Study Master - PDF 기반 예상 시험 문제 & AI 맞춤 첨삭</title>
+    <!-- PWA / Mobile Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF.js CDN Loading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- KaTeX CSS & JS for Crisp Mathematical Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen bg-slate-100 flex flex-col md:flex-row antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- DESKTOP / TABLET SIDEBAR (md 이상) -->
+    <aside class="hidden md:flex md:w-64 lg:w-72 bg-indigo-900 text-white flex-col justify-between p-5 sticky top-0 h-screen z-40 shadow-xl flex-shrink-0">
+        <div class="space-y-6">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg tracking-tight leading-none">AI Study Master</h1>
+                    <p class="text-[11px] text-indigo-300 mt-1">PDF 맞춤 시험 & AI 논술 첨삭</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-1.5 pt-4 border-t border-indigo-800/80">
+                <button onclick="switchTab('tab-home')" id="sidebar-tab-home" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-md">
+                    <i class="fa-solid fa-house text-base w-5 text-center"></i>
+                    <span>홈 대시보드</span>
+                </button>
+                <button onclick="switchTab('tab-upload')" id="sidebar-tab-upload" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white">
+                    <i class="fa-solid fa-file-circle-plus text-base w-5 text-center"></i>
+                    <span>문제지 생성</span>
+                </button>
+                <button onclick="switchTab('tab-math')" id="sidebar-tab-math" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white">
+                    <i class="fa-solid fa-square-root-variable text-base w-5 text-center text-sky-300"></i>
+                    <span>수학 응용문제</span>
+                </button>
+                <button onclick="switchTab('tab-exam')" id="sidebar-tab-exam" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white">
+                    <i class="fa-solid fa-pen-to-square text-base w-5 text-center"></i>
+                    <span>시험 응시</span>
+                </button>
+                <button onclick="switchTab('tab-history')" id="sidebar-tab-history" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white">
+                    <i class="fa-solid fa-clock-rotate-left text-base w-5 text-center"></i>
+                    <span>시험 기록 & 해설</span>
+                </button>
+                <button onclick="switchTab('tab-bookmarks')" id="sidebar-tab-bookmarks" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white">
+                    <i class="fa-solid fa-star text-base w-5 text-center"></i>
+                    <span>즐겨찾기 오답노트</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer Action -->
+        <div class="pt-4 border-t border-indigo-800/80 space-y-2">
+            <button onclick="openCategoryModal()" class="w-full py-2.5 px-3 bg-indigo-800/80 hover:bg-indigo-700 text-indigo-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-sliders text-xs"></i> 과목 카테고리 관리
+            </button>
+            <p class="text-[10px] text-indigo-400 text-center">Multi-Device Responsive Web App</p>
+        </div>
+    </aside>
+
+    <!-- MOBILE HEADER (md 미만) -->
+    <header class="md:hidden bg-indigo-600 text-white sticky top-0 z-40 shadow-sm">
+        <div class="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base leading-none">AI Study Master</h1>
+                    <p class="text-[10px] text-indigo-200 mt-0.5">교양·전공·자격증 AI 시험</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5">
+                <button onclick="openCategoryModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs hover:bg-white/20 active:scale-95 transition-all" title="과목 카테고리 관리">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+                <button onclick="resetApp()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs hover:bg-white/20 active:scale-95 transition-all" title="앱 초기화">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="app-container" class="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 flex flex-col min-h-screen pb-24 md:pb-8">
+
+        <!-- TAB 1: HOME DASHBOARD -->
+        <section id="tab-home" class="space-y-6">
+            <!-- Top Hero Banner Card -->
+            <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 rounded-3xl p-6 md:p-8 text-white shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div class="space-y-2 max-w-xl">
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold tracking-wide">교양 · 전공 · 자격증 · 수학 응용</span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold leading-tight">PDF 요약본과 기출문제로<br>완벽한 예상 시험지 만들기</h2>
+                    <p class="text-xs md:text-sm text-indigo-100 font-light pt-1">최대 30문제 생성, Gemini AI 논술 첨삭부터 숫자와 유형을 바꾼 수학 응용문제까지 한 번에 학습하세요.</p>
+                </div>
+                <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
+                    <button onclick="switchTab('tab-upload')" class="px-5 py-3.5 bg-white text-indigo-700 font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-base"></i> 일반 시험지 생성
+                    </button>
+                    <button onclick="switchTab('tab-math')" class="px-5 py-3.5 bg-sky-500/30 hover:bg-sky-500/40 border border-sky-300/40 text-white font-extrabold text-xs sm:text-sm rounded-2xl backdrop-blur-md active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-square-root-variable text-base text-sky-200"></i> 수학 응용 스튜디오
+                    </button>
+                </div>
+            </div>
+                    <!-- Generate Button -->
+                    <button onclick="generateExam()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4">
+                        <i class="fa-solid fa-bolt text-amber-300"></i> AI 예상 문제지 생성하기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 2.5: MATH VARIATION STUDIO (수학 응용문제 생성기) -->
+        <section id="tab-math" class="hidden space-y-6">
+            <!-- Studio Banner -->
+            <div class="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2.5 py-0.5 bg-white/20 rounded-full text-[11px] font-bold">Math Variation Studio</span>
+                        <span class="text-[11px] text-sky-100"><i class="fa-solid fa-superscript"></i> KaTeX 수식 엔진 탑재</span>
+                    </div>
+                    <h2 class="text-xl md:text-2xl font-extrabold">수학 기출·예제 숫자 및 유형 응용 생성기</h2>
+                    <p class="text-xs text-sky-100 mt-1">원본 수학 문제 파일이나 수식을 입력하면 핵심 개념을 유지한 채 숫자와 문제 유형을 바꾼 새로운 연습문제를 만들어 드립니다.</p>
+                </div>
+                <div class="flex gap-2 self-end sm:self-center">
+                    <button onclick="insertSampleMathPrompt()" class="px-3.5 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold backdrop-blur-sm transition-all">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> 예제 수식 채우기
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- Left Panel: Source Math File / Text Input (5 cols) -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm">1. 원본 수학 문제 입력</h3>
+                            <select id="math-category-select" class="text-xs px-3 py-1.5 border border-slate-200 rounded-xl bg-slate-50 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-sky-500">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Math PDF Dropzone -->
+                        <div onclick="document.getElementById('math-pdf-input').click()" class="border-2 border-dashed border-sky-200 bg-sky-50/40 hover:bg-sky-50 rounded-2xl p-5 text-center cursor-pointer transition-all">
+                            <input type="file" id="math-pdf-input" accept=".pdf" multiple class="hidden" onchange="handleMathFileSelect(event)">
+                            <div class="w-11 h-11 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                                <i class="fa-solid fa-file-pdf text-lg"></i>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">수학 문제집 / 기출 PDF 첨부</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">다중 PDF 업로드 가능</p>
+                        </div>
+
+                        <!-- Math File List -->
+                        <div id="math-file-list-wrap" class="hidden space-y-1.5">
+                            <p class="text-[11px] font-semibold text-slate-500">첨부된 수학 문서 (<span id="math-file-count">0</span>개)</p>
+                            <div id="math-file-list" class="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar"></div>
+                        </div>
+
+                        <!-- Direct Math Problem Input -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-slate-600">수학 문제 텍스트 또는 수식 직접 입력</label>
+                            <textarea id="math-direct-text" rows="5" class="w-full text-xs p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none custom-scrollbar leading-relaxed" placeholder="예: 함수 f(x) = x^3 - 3x^2 + 2의 극댓값과 극솟값을 구하시오. 또는 정적분 ∫_0^1 (2x + 1)e^x dx 의 값을 계산하시오."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Transformation Config Card -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <h3 class="font-bold text-slate-800 text-sm">2. 변형 및 응용 옵션 설정</h3>
+
+                        <!-- Variation Mode Cards -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold text-slate-600">응용 변형 모드</label>
+                            <label class="flex items-start gap-2.5 p-3 rounded-xl border border-sky-200 bg-sky-50/50 cursor-pointer hover:bg-sky-50 transition-colors">
+                                <input type="radio" name="math-mode" value="numbers" checked class="mt-0.5 text-sky-600">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">① 숫자·조건 변형 (동형 반복 훈련)</p>
+                                    <p class="text-[11px] text-slate-500">풀이 공식과 구조는 유지하고 계수, 상수, 적분 구간, 함수식만 새롭게 변경합니다.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <input type="radio" name="math-mode" value="advanced" class="mt-0.5 text-sky-600">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">② 유형 심화·응용 (조건 역전 및 개념 결합)</p>
+                                    <p class="text-[11px] text-slate-500">미지수 위치를 바꾸거나, 극한·미분·적분·행렬 등 인접 개념을 결합한 변별력 문제를 출제합니다.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <input type="radio" name="math-mode" value="applied" class="mt-0.5 text-sky-600">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">③ 실생활·공학 서술형 변환</p>
+                                    <p class="text-[11px] text-slate-500">순수 수식 문제를 물리·공학·데이터 모델링 상황의 문장제 응용문제로 재구성합니다.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Difficulty & Count Row -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">난이도 조절</label>
+                                <select id="math-difficulty" class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 font-semibold text-slate-700 outline-none">
+                                    <option value="기본 (유사 난이도)">기본 (유사 난이도)</option>
+                                    <option value="심화 (난이도 상향)" selected>심화 (난이도 상향)</option>
+                                    <option value="복합 (고난도 융합)">복합 (고난도 융합)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">생성 문항 수 (1~15)</label>
+                                <select id="math-count" class="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50 font-semibold text-slate-700 outline-none">
+                                    <option value="3">3문항</option>
+                                    <option value="5" selected>5문항</option>
+                                    <option value="8">8문항</option>
+                                    <option value="10">10문항</option>
+                                    <option value="15">15문항</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="generateMathVariations()" class="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-sky-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-calculator text-sky-200"></i> 수학 응용문제 생성하기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Generated Math Variations & Interactive Practice (7 cols) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                            <h3 class="font-bold text-slate-800 text-sm">생성된 수학 응용 연습장</h3>
+                            <span id="math-generated-badge" class="text-[11px] font-bold px-2.5 py-0.5 bg-sky-50 text-sky-700 rounded-full">0문항</span>
+                        </div>
+                        <div id="math-batch-actions" class="hidden flex items-center gap-2">
+                            <button onclick="toggleAllMathSolutions()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all">
+                                <i class="fa-solid fa-eye"></i> 전체 풀이 열기/닫기
+                            </button>
+                            <button onclick="convertMathToExam()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all">
+                                <i class="fa-solid fa-pen-to-square"></i> 실전 시험지로 풀기
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="math-results-container" class="space-y-4">
+                        <div class="bg-white p-12 rounded-2xl border border-slate-200/80 text-center space-y-3">
+                            <div class="w-14 h-14 bg-sky-50 text-sky-500 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                                <i class="fa-solid fa-square-root-variable"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-700 text-sm">아직 생성된 수학 응용문제가 없습니다</h4>
+                                <p class="text-xs text-slate-400 mt-1">왼쪽에서 수학 PDF 파일을 올리거나 문제를 입력한 뒤<br><strong>[수학 응용문제 생성하기]</strong> 버튼을 눌러보세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 3: EXAM TAKING (Layout split for PC vs Mobile) -->
+        <section id="tab-exam" class="hidden space-y-6">
+            <!-- Exam Status Top Header Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between sticky top-[60px] md:top-0 z-30 backdrop-blur-md bg-white/95">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="exam-category-badge" class="text-[11px] font-bold px-2.5 py-0.5 bg-indigo-100 text-indigo-700 rounded-md">전공</span>
+                        <span id="exam-badge" class="text-[11px] font-bold px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-md">예상 시험</span>
+                    </div>
+                    <h3 id="exam-title-display" class="font-bold text-slate-800 text-sm mt-1">PDF 기반 통합 시험</h3>
+                </div>
+                <div class="text-right">
+                    <span id="progress-text" class="text-xs font-bold text-indigo-600">0 / 10</span>
+                    <div class="w-28 bg-slate-100 rounded-full h-2 mt-1 overflow-hidden">
+                        <div id="progress-bar" class="bg-indigo-600 h-2 rounded-full w-0 transition-all"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- Left Index Sidebar (for Large screens, lg:col-span-4) -->
+                <div class="hidden lg:block lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 sticky top-20">
+                    <h4 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2"><i class="fa-solid fa-list-ol text-indigo-600"></i> 문항 바로가기</h4>
+                    <div id="exam-index-grid" class="grid grid-cols-5 gap-2">
+                        <!-- Dynamic Question Index Buttons -->
+                    </div>
+                    <div class="pt-2 border-t border-slate-100 space-y-2">
+                        <button onclick="submitExam()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> 시험지 제출 & AI 채점
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Questions List Area (lg:col-span-8) -->
+                <div class="lg:col-span-8 space-y-5">
+                    <div id="questions-list" class="space-y-4"></div>
+
+                    <!-- Bottom In-Page Submit Card -->
+                    <div id="page-bottom-submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-lg space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-base">모든 문제 풀이를 마치셨나요?</h4>
+                                <p class="text-xs text-emerald-100 mt-0.5">제출 시 자동 채점과 Gemini AI 논술형 정밀 첨삭이 수행됩니다.</p>
+                            </div>
+                            <i class="fa-solid fa-paper-plane text-3xl text-emerald-200"></i>
+                        </div>
+                        <button onclick="submitExam()" class="w-full py-3.5 bg-white text-emerald-800 font-extrabold text-sm rounded-xl shadow-md hover:bg-emerald-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-check"></i> 시험지 제출 & AI 채점하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Bottom Sticky Submit Bar (md 미만) -->
+            <div id="sticky-submit-bar" class="md:hidden fixed bottom-14 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-30 shadow-lg">
+                <div class="max-w-xl mx-auto flex items-center justify-between gap-3 px-2">
+                    <div class="text-xs">
+                        <span class="text-slate-400 font-medium">진행: </span>
+                        <span id="bottom-progress-text" class="font-extrabold text-indigo-600">0 / 0</span>
+                    </div>
+                    <button onclick="submitExam()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> 제출 & 채점
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 4: HISTORY & EXAM RECORDS -->
+        <section id="tab-history" class="hidden space-y-6">
+            <!-- Score Result Header Card -->
+            <div id="result-score-card" class="hidden bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-md text-center space-y-4">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl font-black">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">최근 시험 응시 결과</p>
+                    <div class="py-1">
+                        <span id="score-text" class="text-5xl font-black text-indigo-600">0</span>
+                        <span class="text-lg font-bold text-slate-400"> / 100점</span>
+                    </div>
+                    <p id="score-subtext" class="text-xs text-slate-500">객관식/OX/단답형 자동채점 + 논술형 AI 상세 평가 종합 반영</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 max-w-md mx-auto pt-2 text-xs border-t border-slate-100">
+                    <div class="p-3 rounded-2xl bg-slate-50">
+                        <p class="text-slate-400 font-semibold">총 문항</p>
+                        <p id="stat-total" class="font-extrabold text-slate-800 text-sm mt-0.5">0개</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800">
+                        <p class="text-emerald-600 font-semibold">객관식 정답</p>
+                        <p id="stat-correct" class="font-extrabold text-sm mt-0.5">0개</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-indigo-50 text-indigo-800">
+                        <p class="text-indigo-600 font-semibold">논술 첨삭</p>
+                        <p id="stat-essay" class="font-extrabold text-sm mt-0.5">0개</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Filter & Controls -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-slate-800 text-sm">과목별 시험 기록 필터:</h3>
+                    <div id="history-category-filters" class="flex gap-1.5 overflow-x-auto custom-scrollbar">
+                        <!-- Dynamic filter buttons -->
+                    </div>
+                </div>
+                <button onclick="clearAllHistory()" class="text-xs text-rose-500 hover:text-rose-700 font-bold flex items-center gap-1 self-end md:self-auto">
+                    <i class="fa-solid fa-trash-can"></i> 전체 시험 기록 삭제
+                </button>
+            </div>
+
+            <!-- Detailed Feedback Records Container -->
+            <div id="history-records-list" class="space-y-4"></div>
+        </section>
+
+
+        <!-- TAB 5: BOOKMARKS & SCRAPS -->
+        <section id="tab-bookmarks" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base"><i class="fa-solid fa-star text-amber-400 mr-1.5"></i> 즐겨찾기 오답노트</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">별표 아이콘으로 보관한 핵심 문항과 AI 첨삭 가이드 모음입니다.</p>
+                    </div>
+                    <span id="bookmark-count-badge" class="text-xs font-bold px-3 py-1 bg-amber-100 text-amber-800 rounded-full">0개</span>
+                </div>
+                <div id="bookmark-category-filters" class="flex gap-1.5 overflow-x-auto custom-scrollbar pt-2 border-t border-slate-100">
+                    <!-- Dynamic Category Filter Chips -->
+                </div>
+            </div>
+
+            <div id="bookmarks-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically Populated -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CATEGORY MANAGEMENT MODAL -->
+    <div id="category-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-5 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600 text-lg"></i>
+                    <h3 class="font-extrabold text-slate-800 text-base">과목 카테고리 편집</h3>
+                </div>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Add New Category Input Form -->
+            <div class="flex gap-2">
+                <input type="text" id="modal-new-cat-input" placeholder="새 과목명 입력 (예: 회계학)" class="flex-1 text-xs p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                <button onclick="addCategoryFromModal()" class="px-4 py-3 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 active:scale-95 transition-all flex-shrink-0">
+                    추가
+                </button>
+            </div>
+
+            <!-- Editable Category List -->
+            <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pt-1" id="modal-category-list">
+                <!-- Category Row Items Rendered Dynamically -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 text-right">
+                <button onclick="closeCategoryModal()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-200">
+                    완료
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl p-8 text-center max-w-sm w-full space-y-4 shadow-2xl">
+            <div class="w-14 h-14 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+            <div>
+                <h4 id="loading-status" class="font-extrabold text-slate-800 text-base">Gemini AI 처리 중...</h4>
+                <p id="loading-desc" class="text-xs text-slate-400 mt-1">PDF 내용을 분석하고 문제를 생성하는 중입니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV BAR (md 미만 전용) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 z-40 pb-safe">
+        <div class="max-w-xl mx-auto grid grid-cols-6 h-14 text-[10px] font-medium">
+            <button onclick="switchTab('tab-home')" id="nav-tab-home" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-indigo-600 font-bold">
+                <i class="fa-solid fa-house text-sm"></i>
+                <span>홈</span>
+            </button>
+            <button onclick="switchTab('tab-upload')" id="nav-tab-upload" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-indigo-600">
+                <i class="fa-solid fa-file-circle-plus text-sm"></i>
+                <span>문제생성</span>
+            </button>
+            <button onclick="switchTab('tab-math')" id="nav-tab-math" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-sky-600">
+                <i class="fa-solid fa-square-root-variable text-sm"></i>
+                <span>수학응용</span>
+            </button>
+            <button onclick="switchTab('tab-exam')" id="nav-tab-exam" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-indigo-600">
+                <i class="fa-solid fa-pen-to-square text-sm"></i>
+                <span>시험응시</span>
+            </button>
+            <button onclick="switchTab('tab-history')" id="nav-tab-history" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-indigo-600">
+                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                <span>시험기록</span>
+            </button>
+            <button onclick="switchTab('tab-bookmarks')" id="nav-tab-bookmarks" class="nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-indigo-600">
+                <i class="fa-solid fa-star text-sm"></i>
+                <span>즐겨찾기</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CUSTOM CONFIRM DIALOG MODAL (Replaces native confirm) -->
+    <div id="custom-confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-xs w-full space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex items-center gap-2.5 text-slate-800">
+                <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-circle-question text-base"></i>
+                </div>
+                <h4 class="font-extrabold text-sm">확인 요청</h4>
+            </div>
+            <p id="custom-confirm-msg" class="text-xs text-slate-600 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="custom-confirm-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all">취소</button>
+                <button id="custom-confirm-ok" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-16 md:top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-5 py-3 rounded-full shadow-2xl opacity-0 -translate-y-4 transition-all duration-300 pointer-events-none z-50 flex items-center gap-2.5">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toast-msg">알림 메시지</span>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        const DEFAULT_CATEGORIES = ["교양", "전공", "자격증"];
+        let categories = JSON.parse(localStorage.getItem('study_master_categories_v3') || JSON.stringify(DEFAULT_CATEGORIES));
+        let currentCategory = categories[0] || '전공';
+        let uploadedFiles = [];
+        let mathUploadedFiles = [];
+        let generatedMathProblems = [];
+        let allMathSolutionsOpen = false;
+        let selectedCount = 10;
+        let generatedExamData = null;
+// ... existing code ... -->
+        // Tab Switcher for both Sidebar & Mobile Nav
+        function switchTab(tabId) {
+            ['tab-home', 'tab-upload', 'tab-math', 'tab-exam', 'tab-history', 'tab-bookmarks'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Update Mobile Bottom Nav
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-indigo-600";
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                const colorClass = tabId === 'tab-math' ? 'text-sky-600 font-bold' : 'text-indigo-600 font-bold';
+                activeNav.className = `nav-btn flex flex-col items-center justify-center gap-0.5 ${colorClass}`;
+            }
+
+            // Update Desktop Sidebar Nav
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.className = "sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-indigo-200 hover:bg-indigo-800/60 hover:text-white";
+            });
+            const activeSidebar = document.getElementById(`sidebar-${tabId}`);
+            if (activeSidebar) {
+                const bgClass = tabId === 'tab-math' ? 'bg-sky-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md';
+                activeSidebar.className = `sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${bgClass}`;
+            }
+
+            if (tabId === 'tab-bookmarks') renderBookmarksList();
+            if (tabId === 'tab-history') renderHistoryList();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Category Management
+        function renderCategorySelect() {
+            const optionsHtml = categories.map(cat => `<option value="${escapeHtml(cat)}"${cat === currentCategory ? ' selected' : ''}>${escapeHtml(cat)}</option>`).join('');
+            const select = document.getElementById('category-select');
+            if (select) {
+                select.innerHTML = optionsHtml;
+                select.onchange = (e) => { currentCategory = e.target.value; };
+            }
+            const mathSelect = document.getElementById('math-category-select');
+            if (mathSelect) {
+                mathSelect.innerHTML = optionsHtml;
+                mathSelect.onchange = (e) => { currentCategory = e.target.value; };
+            }
+        }
+
+        function deleteCategory(index) {
+            const target = categories[index];
+            if (categories.length <= 1) {
+                showToast("최소 1개 이상의 과목 카테고리가 존재해야 합니다.", 'warning');
+                return;
+            }
+
+            showConfirmModal(`'${target}' 과목 카테고리를 삭제하시겠습니까?`, () => {
+                categories.splice(index, 1);
+                if (currentCategory === target) currentCategory = categories[0];
+                saveCategoriesToStorage();
+                renderModalCategoryList();
+                showToast(`'${target}' 과목이 삭제되었습니다.`, 'info');
+            });
+        }
+
+        function toggleDirectTextInput() {
+            const wrap = document.getElementById('direct-text-wrap');
+            wrap.classList.toggle('hidden');
+            if (!wrap.classList.contains('hidden')) {
+                document.getElementById('direct-text').focus();
+            }
+        }
+
+        // Multi PDF Upload and Text Parsing
+        async function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            showLoading(true, "PDF 텍스트 분석 중...", "PDF 문서의 내용을 읽고 있습니다.");
+
+            for (const file of files) {
+                if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+                    showToast(`${file.name}: PDF 파일만 지원합니다.`, 'warning');
+                    continue;
+                }
+
+                const fileObj = {
+                    id: Date.now() + Math.random(),
+                    name: file.name,
+                    size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                    text: '',
+                    status: 'parsing'
+                };
+                uploadedFiles.push(fileObj);
+                renderFileList();
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const extractedText = await extractTextFromPDFArrayBuffer(arrayBuffer);
+
+                    if (extractedText && extractedText.trim().length > 10) {
+                        fileObj.text = extractedText.trim();
+                        fileObj.status = 'success';
+                    } else {
+                        fileObj.status = 'empty';
+                    }
+                } catch (err) {
+                    console.error('PDF parsing error:', file.name, err);
+                    fileObj.status = 'error';
+                }
+            }
+
+            renderFileList();
+            showLoading(false);
+
+            const hasEmpty = uploadedFiles.some(f => f.status === 'empty' || f.status === 'error');
+            if (hasEmpty) {
+                document.getElementById('direct-text-wrap').classList.remove('hidden');
+                showToast("일부 PDF의 텍스트를 읽지 못했습니다. 아래 텍스트 입력창을 사용해 주세요.", 'warning');
+            } else {
+                showToast(`${uploadedFiles.length}개 PDF 파싱 완료!`, 'success');
+            }
+            event.target.value = '';
+        }
+
+        async function extractTextFromPDFArrayBuffer(arrayBuffer) {
+            if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js 미로드');
+            const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+            const pdfDoc = await loadingTask.promise;
+            let fullText = '';
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                try {
+                    const page = await pdfDoc.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += `\n[Page ${pageNum}]\n` + pageText;
+                } catch (e) {}
+            }
+            return fullText;
+        }
+
+        function removeFile(id) {
+            uploadedFiles = uploadedFiles.filter(f => f.id !== id);
+            renderFileList();
+        }
+
+        function renderFileList() {
+            const container = document.getElementById('file-list');
+            const wrap = document.getElementById('file-list-container');
+            const countEl = document.getElementById('file-count');
+
+            if (!uploadedFiles.length) {
+                wrap.classList.add('hidden');
+                return;
+            }
+
+            wrap.classList.remove('hidden');
+            countEl.innerText = uploadedFiles.length;
+            container.innerHTML = '';
+
+            uploadedFiles.forEach(f => {
+                let badge = f.status === 'success' 
+                    ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-semibold"><i class="fa-solid fa-check"></i> 성공</span>`
+                    : `<span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> 텍스트 부족</span>`;
+
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fa-solid fa-file-pdf text-rose-500 text-base flex-shrink-0"></i>
+                        <div class="truncate">
+                            <p class="font-bold text-slate-700 truncate">${escapeHtml(f.name)}</p>
+                            <p class="text-[10px] text-slate-400">${f.size} · ${badge}</p>
+                        </div>
+                    </div>
+                    <button onclick="removeFile(${f.id})" class="text-slate-400 hover:text-rose-500 p-1">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Gemini AI Exam Generator
+        async function generateExam() {
+            const pdfTexts = uploadedFiles.map(f => f.text).filter(t => t.length > 0).join('\n\n--- NEXT DOCUMENT ---\n\n');
+            const directText = document.getElementById('direct-text').value.trim();
+            const combinedText = (pdfTexts + '\n\n' + directText).trim();
+
+            if (!combinedText || combinedText.length < 20) {
+                showToast("학습할 PDF를 첨부하거나 텍스트를 입력해 주세요.", 'warning');
+                document.getElementById('direct-text-wrap').classList.remove('hidden');
+                return;
+            }
+
+            const enabledTypes = [];
+            if (document.getElementById('type-mcq').checked) enabledTypes.push('mcq (객관식 4지선다)');
+            if (document.getElementById('type-tf').checked) enabledTypes.push('tf (OX 퀴즈)');
+            if (document.getElementById('type-short').checked) enabledTypes.push('short (단답형)');
+            if (document.getElementById('type-descriptive').checked) enabledTypes.push('descriptive (서술형)');
+            if (document.getElementById('type-essay').checked) enabledTypes.push('essay (논술형)');
+
+            if (!enabledTypes.length) {
+                showToast("최소 1개 이상의 문제 유형을 선택해야 합니다.", 'warning');
+                return;
+            }
+
+            const diff = document.getElementById('difficulty').value;
+
+            showLoading(true, "AI 예상 문제지 생성 중...", `[${currentCategory}] 과목의 총 ${selectedCount}문항을 구성하고 있습니다.`);
+
+            try {
+                const systemPrompt = `당신은 출제 경력이 풍부한 대학 교수 및 자격증 출제위원입니다. 제공된 학습 자료를 정밀 분석하여 학업 성과를 측정할 수 있는 예상 시험 문제지를 JSON 형식으로 생성하세요.`;
+
+                const userPrompt = `
+[과목] ${currentCategory}
+[학습 자료]
+${combinedText.substring(0, 15000)}
+
+[요구사항]
+1. 총 문제 수: ${selectedCount}개
+2. 선택된 문제 유형: ${enabledTypes.join(', ')} (균형 있게 배분)
+3. 난이도: ${diff}
+4. 반드시 아래 구조의 JSON 배열 형식만 출력하세요:
+
+[
+  {
+    "id": 1,
+    "type": "mcq", // "mcq" | "tf" | "short" | "descriptive" | "essay"
+    "question": "문제 내용",
+    "options": ["1번", "2번", "3번", "4번"], // mcq 일때만 4개 선택지, 나머지는 []
+    "answer": "정답 또는 핵심 평가 기준 키워드",
+    "explanation": "해당 문제의 상세 개념 해설"
+  }
+]`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userPrompt }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                if (!response.ok) throw new Error("Gemini API Error");
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) throw new Error("Empty AI response");
+
+                generatedExamData = JSON.parse(jsonText);
+                generatedExamData.forEach((q, idx) => {
+                    q.uid = `q_${Date.now()}_${idx}`;
+                    q.category = currentCategory;
+                });
+
+                showLoading(false);
+                showToast(`[${currentCategory}] ${generatedExamData.length}문항 생성 완료!`, 'success');
+
+                renderExamView();
+                switchTab('tab-exam');
+
+            } catch (err) {
+                console.error("Failed to generate exam:", err);
+                showLoading(false);
+                showToast("문제지 생성 중 오류가 발생했습니다. 다시 시도해주세요.", 'error');
+            }
+        }
+
+        // Render Exam View
+        function renderExamView() {
+            const container = document.getElementById('questions-list');
+            const indexGrid = document.getElementById('exam-index-grid');
+            container.innerHTML = '';
+            indexGrid.innerHTML = '';
+            userAnswers = {};
+
+            document.getElementById('exam-category-badge').innerText = currentCategory;
+            document.getElementById('exam-title-display').innerText = `${currentCategory} 예상 시험`;
+
+            const total = generatedExamData.length;
+            document.getElementById('progress-text').innerText = `0 / ${total}`;
+            document.getElementById('bottom-progress-text').innerText = `0 / ${total}`;
+            document.getElementById('progress-bar').style.width = '0%';
+
+            generatedExamData.forEach((q, index) => {
+                // Render Index Button
+                const idxBtn = document.createElement('button');
+                idxBtn.id = `idx-btn-${q.id}`;
+                idxBtn.className = "py-2 bg-slate-100 hover:bg-indigo-50 text-slate-700 font-bold text-xs rounded-xl transition-all";
+                idxBtn.innerText = `${index + 1}`;
+                idxBtn.onclick = () => {
+                    document.getElementById(`q-card-${q.id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                };
+                indexGrid.appendChild(idxBtn);
+
+                // Render Card
+                const card = document.createElement('div');
+                card.id = `q-card-${q.id}`;
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3";
+
+                let typeLabel = "";
+                let typeBadgeColor = "";
+                if (q.type === 'mcq') { typeLabel = "객관식"; typeBadgeColor = "bg-indigo-50 text-indigo-600"; }
+                else if (q.type === 'tf') { typeLabel = "OX 퀴즈"; typeBadgeColor = "bg-amber-50 text-amber-600"; }
+                else if (q.type === 'short') { typeLabel = "단답형"; typeBadgeColor = "bg-blue-50 text-blue-600"; }
+                else if (q.type === 'descriptive') { typeLabel = "서술형"; typeBadgeColor = "bg-teal-50 text-teal-600"; }
+                else { typeLabel = "논술형 (AI 첨삭)"; typeBadgeColor = "bg-purple-50 text-purple-700 font-bold"; }
+
+                let inputHtml = '';
+                if (q.type === 'mcq') {
+                    const opts = q.options && q.options.length ? q.options : ["선택지 1", "선택지 2", "선택지 3", "선택지 4"];
+                    inputHtml = `<div class="space-y-2 pt-1">
+                        ${opts.map((opt, i) => `
+                            <label class="flex items-center p-3 rounded-xl border border-slate-200 hover:bg-indigo-50/50 cursor-pointer transition-colors text-xs font-medium text-slate-700">
+                                <input type="radio" name="q_${q.id}" value="${escapeHtml(opt)}" onchange="recordAnswer(${q.id}, this.value)" class="w-4 h-4 text-indigo-600">
+                                <span class="ml-2.5">${i + 1}. ${escapeHtml(opt)}</span>
+                            </label>
+                        `).join('')}
+                    </div>`;
+                } else if (q.type === 'tf') {
+                    inputHtml = `<div class="grid grid-cols-2 gap-3 pt-1">
+                        <label class="flex items-center justify-center p-3.5 rounded-xl border border-slate-200 hover:bg-emerald-50 cursor-pointer text-emerald-700 font-extrabold text-base">
+                            <input type="radio" name="q_${q.id}" value="O" onchange="recordAnswer(${q.id}, 'O')" class="w-4 h-4 text-emerald-600">
+                            <span class="ml-2">O</span>
+                        </label>
+                        <label class="flex items-center justify-center p-3.5 rounded-xl border border-slate-200 hover:bg-rose-50 cursor-pointer text-rose-700 font-extrabold text-base">
+                            <input type="radio" name="q_${q.id}" value="X" onchange="recordAnswer(${q.id}, 'X')" class="w-4 h-4 text-rose-600">
+                            <span class="ml-2">X</span>
+                        </label>
+                    </div>`;
+                } else if (q.type === 'short') {
+                    inputHtml = `<div class="pt-1">
+                        <input type="text" oninput="recordAnswer(${q.id}, this.value)" placeholder="정답 단어를 입력하세요..." class="w-full text-xs p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>`;
+                } else if (q.type === 'descriptive') {
+                    inputHtml = `<div class="pt-1">
+                        <textarea oninput="recordAnswer(${q.id}, this.value)" rows="3" placeholder="1~2문장으로 핵심 서술..." class="w-full text-xs p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                    </div>`;
+                } else {
+                    inputHtml = `<div class="pt-1 space-y-1.5">
+                        <textarea oninput="recordAnswer(${q.id}, this.value)" rows="6" placeholder="문제의 요구사항에 맞춰 논리적으로 논술 답안을 작성하세요..." class="w-full text-xs p-3.5 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none custom-scrollbar"></textarea>
+                    </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] px-2.5 py-0.5 rounded font-semibold ${typeBadgeColor}">${typeLabel}</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="font-black text-indigo-600 text-sm">Q${index + 1}.</span>
+                        <h4 class="font-bold text-slate-800 text-xs md:text-sm leading-relaxed math-render-target">${escapeHtml(q.question)}</h4>
+                    </div>
+                    ${inputHtml}
+                `;
+                container.appendChild(card);
+            });
+            renderKaTeXInElement(container);
+        }
+
+        function recordAnswer(qId, val) {
+            const idxBtn = document.getElementById(`idx-btn-${qId}`);
+            if (val && val.trim() !== '') {
+                userAnswers[qId] = val.trim();
+                if (idxBtn) idxBtn.className = "py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-sm transition-all";
+            } else {
+                delete userAnswers[qId];
+                if (idxBtn) idxBtn.className = "py-2 bg-slate-100 hover:bg-indigo-50 text-slate-700 font-bold text-xs rounded-xl transition-all";
+            }
+
+            const count = Object.keys(userAnswers).length;
+            const total = generatedExamData.length;
+            document.getElementById('progress-text').innerText = `${count} / ${total}`;
+            document.getElementById('bottom-progress-text').innerText = `${count} / ${total}`;
+            document.getElementById('progress-bar').style.width = `${(count / total) * 100}%`;
+        }
+
+        // Submit Exam
+        async function submitExam() {
+            const total = generatedExamData.length;
+            const answered = Object.keys(userAnswers).length;
+
+            if (answered < total) {
+                showConfirmModal(`풀지 않은 문제가 있습니다 (${answered}/${total}). 그대로 제출하시겠습니까?`, () => {
+                    executeSubmitExam();
+                });
+                return;
+            }
+            executeSubmitExam();
+        }
+
+        async function executeSubmitExam() {
+            const total = generatedExamData.length;
+            const essayQuestions = generatedExamData.filter(q => q.type === 'essay' || q.type === 'descriptive');
+
+            showLoading(true, "AI 채점 및 논술 첨삭 진행 중...", "제출 답안의 문제 취지 부합도 및 개선점 가이드를 평가 중입니다.");
+
+            let autoCorrectCount = 0;
+            let autoGradedTotal = 0;
+
+            generatedExamData.forEach(q => {
+                const uAns = (userAnswers[q.id] || "").trim();
+                if (q.type === 'mcq' || q.type === 'tf') {
+                    autoGradedTotal++;
+                    q.isCorrect = uAns.toLowerCase() === (q.answer || "").trim().toLowerCase();
+                    if (q.isCorrect) autoCorrectCount++;
+                } else if (q.type === 'short') {
+                    autoGradedTotal++;
+                    const cAns = (q.answer || "").toLowerCase();
+                    q.isCorrect = uAns && (cAns.includes(uAns.toLowerCase()) || uAns.toLowerCase().includes(cAns));
+                    if (q.isCorrect) autoCorrectCount++;
+                }
+            });
+
+            for (const q of essayQuestions) {
+                const uAns = userAnswers[q.id] || "답안을 작성하지 않았습니다.";
+                try {
+                    q.aiFeedback = await evaluateEssayWithAI(q.question, q.answer, uAns, q.type);
+                } catch (e) {
+                    q.aiFeedback = {
+                        score: 0,
+                        relevance: "평가 중 오류 발생",
+                        strengths: "N/A",
+                        improvements: "N/A",
+                        structureGuide: "다시 시도해 주세요."
+                    };
+                }
+            }
+
+            showLoading(false);
+
+            const autoScore = autoGradedTotal > 0 ? (autoCorrectCount / autoGradedTotal) * 100 : 100;
+            const finalScore = Math.round(autoScore);
+
+            const record = {
+                id: Date.now(),
+                category: currentCategory,
+                date: new Date().toLocaleDateString('ko-KR') + ' ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+                score: finalScore,
+                total: total,
+                correct: autoCorrectCount,
+                essayCount: essayQuestions.length,
+                questions: generatedExamData,
+                userAnswers: userAnswers
+            };
+
+            examHistory.unshift(record);
+            localStorage.setItem('study_master_history_v4', JSON.stringify(examHistory));
+
+            document.getElementById('score-text').innerText = finalScore;
+            document.getElementById('stat-total').innerText = `${total}개`;
+            document.getElementById('stat-correct').innerText = `${autoCorrectCount}개`;
+            document.getElementById('stat-essay').innerText = `${essayQuestions.length}개`;
+            document.getElementById('result-score-card').classList.remove('hidden');
+
+            updateHistoryStats();
+            renderHistoryList();
+            switchTab('tab-history');
+            renderKaTeXInElement(document.getElementById('history-records-list'));
+        }
+
+        async function evaluateEssayWithAI(question, sampleAnswer, userAnswer, type) {
+            const systemPrompt = "당신은 전문 채점 교수입니다. 작성 답안에 대해 문제 취지 부합도, 강점, 보완점, 모범 구조 가이드를 JSON으로 정교하게 첨삭하세요.";
+            const userPrompt = `
+[문제 정보]
+- 유형: ${type === 'essay' ? '논술형' : '서술형'}
+- 문제 질문: ${question}
+- 출제 의도 및 정답 기준: ${sampleAnswer}
+
+[학생 답안]
+${userAnswer}
+
+[출력 규격 (JSON 전용)]
+{
+  "score": 85,
+  "relevance": "문제의 요구사항과 출제 취지에 얼마나 부합했는지 총평 (2~3문장)",
+  "strengths": "잘된 점 (논리 구성, 핵심 개념 활용 강점)",
+  "improvements": "보완할 점 및 수정 가이드",
+  "structureGuide": "AI 제안 모범 답안 구조/개요 작성 팁"
+}`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            if (!response.ok) throw new Error("AI Essay Eval API Error");
+
+            const result = await response.json();
+            const jsonStr = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            return JSON.parse(jsonStr);
+        }
+
+        // History Render
+        function renderHistoryList() {
+            const container = document.getElementById('history-records-list');
+            const filterContainer = document.getElementById('history-category-filters');
+
+            const categoriesInHistory = ['ALL', ...new Set(examHistory.map(h => h.category || '전공'))];
+            filterContainer.innerHTML = categoriesInHistory.map(cat => `
+                <button onclick="setHistoryFilter('${escapeHtml(cat)}')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all ${activeHistoryCategory === cat ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ${cat === 'ALL' ? '전체 보기' : escapeHtml(cat)}
+                </button>
+            `).join('');
+
+            const filteredHistory = activeHistoryCategory === 'ALL' 
+                ? examHistory 
+                : examHistory.filter(h => (h.category || '전공') === activeHistoryCategory);
+
+            if (!filteredHistory.length) {
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300 block mb-2"></i>
+                        해당 과목의 시험 응시 기록이 없습니다.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            filteredHistory.forEach((record) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3";
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-md">${escapeHtml(record.category || '전공')}</span>
+                            <span class="text-xs text-slate-400 font-medium">${record.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-indigo-600 text-base">${record.score}점</span>
+                            <button onclick="deleteHistoryRecord(${record.id})" class="text-slate-300 hover:text-rose-500 p-1 transition-colors" title="기록 삭제">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+                        <span>총 ${record.total}문항 (정답 ${record.correct}개 / 논술 ${record.essayCount}개)</span>
+                        <button onclick="toggleRecordDetails(${record.id})" class="text-indigo-600 font-bold flex items-center gap-1">
+                            <span>상세 해설 및 AI 첨삭 보기</span> <i id="arrow-${record.id}" class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div id="details-${record.id}" class="hidden space-y-3 pt-2 border-t border-slate-100">
+                        ${renderQuestionsDetailHTML(record.questions, record.userAnswers, record.category)}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleRecordDetails(recordId) {
+            const detailsEl = document.getElementById(`details-${recordId}`);
+            const arrowEl = document.getElementById(`arrow-${recordId}`);
+            if (detailsEl) {
+                detailsEl.classList.toggle('hidden');
+                if (arrowEl) arrowEl.classList.toggle('rotate-180');
+                if (!detailsEl.classList.contains('hidden')) {
+                    renderKaTeXInElement(detailsEl);
+                }
+            }
+        }
+
+        function setHistoryFilter(cat) {
+            activeHistoryCategory = cat;
+            renderHistoryList();
+        }
+
+        function deleteHistoryRecord(recordId) {
+            showConfirmModal("해당 시험 응시 기록을 삭제하시겠습니까?", () => {
+                examHistory = examHistory.filter(h => h.id !== recordId);
+                localStorage.setItem('study_master_history_v4', JSON.stringify(examHistory));
+                showToast("시험 기록이 삭제되었습니다.", 'info');
+                updateHistoryStats();
+                renderHistoryList();
+            });
+        }
+
+        function clearAllHistory() {
+            showConfirmModal("전체 시험 기록을 삭제하시겠습니까?", () => {
+                examHistory = [];
+                localStorage.setItem('study_master_history_v4', JSON.stringify(examHistory));
+                showToast("전체 시험 기록이 삭제되었습니다.", 'info');
+                updateHistoryStats();
+                renderHistoryList();
+            });
+        }
+                    <p class="font-bold text-slate-800 text-xs md:text-sm leading-relaxed">${escapeHtml(q.question)}</p>
+                    ${bodyHtml}
+                `;
+                container.appendChild(card);
+            });
+            renderKaTeXInElement(container);
+        }
+
+        function setBookmarkFilter(cat) {
+            activeBookmarkCategory = cat;
+            renderBookmarksList();
+        }
+
+        // ==========================================
+        // MATH VARIATION STUDIO LOGIC
+        // ==========================================
+
+        function insertSampleMathPrompt() {
+            const sample = `[미적분학 기출 예제]
+1. 정적분 \\int_{0}^{2} (3x^2 - 4x + 5) dx 의 값을 구하시오.
+2. 함수 f(x) = x^3 - 6x^2 + 9x + 1 의 극댓값과 극솟값의 합을 구하시오.
+3. 행렬 A = \\begin{pmatrix} 2 & 1 \\\\ 1 & 2 \\end{pmatrix} 의 고윳값(eigenvalues)을 모두 구하시오.`;
+            document.getElementById('math-direct-text').value = sample;
+            showToast("예제 수학 문제가 입력되었습니다.", 'info');
+        }
+
+        async function handleMathFileSelect(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            showLoading(true, "수학 PDF 분석 중...", "수식 및 문제 텍스트를 추출하고 있습니다.");
+
+            for (const file of files) {
+                if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+                    showToast(`${file.name}: PDF 파일만 지원합니다.`, 'warning');
+                    continue;
+                }
+
+                const fileObj = {
+                    id: Date.now() + Math.random(),
+                    name: file.name,
+                    size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                    text: '',
+                    status: 'parsing'
+                };
+                mathUploadedFiles.push(fileObj);
+                renderMathFileList();
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const extractedText = await extractTextFromPDFArrayBuffer(arrayBuffer);
+
+                    if (extractedText && extractedText.trim().length > 5) {
+                        fileObj.text = extractedText.trim();
+                        fileObj.status = 'success';
+                    } else {
+                        fileObj.status = 'empty';
+                    }
+                } catch (err) {
+                    console.error('Math PDF parsing error:', file.name, err);
+                    fileObj.status = 'error';
+                }
+            }
+
+            renderMathFileList();
+            showLoading(false);
+
+            if (mathUploadedFiles.some(f => f.status !== 'success')) {
+                showToast("일부 수식 이미지 PDF는 텍스트가 누락될 수 있으니 필요 시 아래 입력창에 보완해 주세요.", 'warning');
+            } else {
+                showToast(`${mathUploadedFiles.length}개 수학 PDF 로드 완료!`, 'success');
+            }
+            event.target.value = '';
+        }
+
+        function removeMathFile(id) {
+            mathUploadedFiles = mathUploadedFiles.filter(f => f.id !== id);
+            renderMathFileList();
+        }
+
+        function renderMathFileList() {
+            const wrap = document.getElementById('math-file-list-wrap');
+            const list = document.getElementById('math-file-list');
+            const countEl = document.getElementById('math-file-count');
+
+            if (!mathUploadedFiles.length) {
+                wrap.classList.add('hidden');
+                return;
+            }
+
+            wrap.classList.remove('hidden');
+            countEl.innerText = mathUploadedFiles.length;
+            list.innerHTML = mathUploadedFiles.map(f => {
+                const badge = f.status === 'success'
+                    ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">완료</span>`
+                    : `<span class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">수식보완필요</span>`;
+                return `
+                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        <div class="flex items-center gap-2 truncate">
+                            <i class="fa-solid fa-file-pdf text-sky-600"></i>
+                            <span class="font-semibold text-slate-700 truncate">${escapeHtml(f.name)}</span>
+                            ${badge}
+                        </div>
+                        <button onclick="removeMathFile(${f.id})" class="text-slate-400 hover:text-rose-500 px-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function generateMathVariations() {
+            const pdfTexts = mathUploadedFiles.map(f => f.text).filter(t => t.length > 0).join('\n\n--- NEXT MATH DOC ---\n\n');
+            const directText = document.getElementById('math-direct-text').value.trim();
+            const combinedMathText = (pdfTexts + '\n\n' + directText).trim();
+
+            if (!combinedMathText || combinedMathText.length < 5) {
+                showToast("수학 PDF 파일을 첨부하거나 원본 수학 문제를 입력해 주세요.", 'warning');
+                return;
+            }
+
+            const modeRadio = document.querySelector('input[name="math-mode"]:checked');
+            const modeVal = modeRadio ? modeRadio.value : 'numbers';
+            const modeDescMap = {
+                numbers: "숫자·조건 변형 (원본 문제의 핵심 공식과 풀이 흐름은 유지하면서 계수, 상수, 지수, 적분 구간 등 숫자와 조건만 새롭게 변형)",
+                advanced: "유형 심화·응용 (주어진 조건과 구하는 미지수의 역할을 뒤바꾸거나, 인접 단원 개념을 결합하여 사고력을 요구하는 변별력 심화 문제로 출제)",
+                applied: "실생활·공학 서술형 변환 (순수 수식/계산 문제를 물리학, 공학, 경제, 데이터 분석 등 현실 상황의 문장제 응용문제로 재구성)"
+            };
+
+            const difficulty = document.getElementById('math-difficulty').value;
+            const count = parseInt(document.getElementById('math-count').value) || 5;
+            const selectedCat = document.getElementById('math-category-select').value || currentCategory;
+
+            showLoading(true, "수학 응용문제 출제 중...", `Gemini AI가 숫자와 유형을 변형하여 ${count}문항과 단계별 풀이를 작성하고 있습니다.`);
+
+            try {
+                const systemPrompt = `당신은 대한민국 최고의 수학 및 공학수학 전문 출제위원입니다.
+사용자가 제공한 원본 수학 문제(들)의 핵심 개념과 풀이 원리를 분석한 뒤, 요청된 변형 모드에 맞춰 완전히 새로운 응용문제를 출제하세요.
+모든 수학 기호, 분수, 적분, 극한, 행렬, 지수 등은 반드시 LaTeX 문법($...$ 또는 $$...$$)을 사용하여 정확하게 표기하세요. JSON 백슬래시 이스케이프(\\\\)에 각별히 주의하여 유효한 JSON만 반환하세요.`;
+
+                const userPrompt = `
+[과목 카테고리] ${selectedCat}
+[변형 모드] ${modeDescMap[modeVal]}
+[목표 난이도] ${difficulty}
+[생성 문항 수] ${count}개
+
+[원본 수학 문제 자료]
+${combinedMathText.substring(0, 14000)}
+
+[출력 규격 - 반드시 아래 JSON 배열 스키마만 출력]
+[
+  {
+    "id": 1,
+    "conceptSummary": "원본 문제의 핵심 단원 및 출제 원리 요약 (예: 다항함수의 정적분과 넓이 공식)",
+    "variationPoint": "어떻게 변형했는지 설명 (예: 피적분함수의 계수와 적분 구간을 변경하고 절댓값 조건을 추가함)",
+    "question": "LaTeX 수식($...$)이 포함된 새로운 응용문제 본문",
+    "answer": "최종 정답 (예: $14$ 또는 $x = 2, y = -1$)",
+    "stepByStep": [
+      "1단계: 풀이 첫 번째 단계 설명 및 LaTeX 수식 전개",
+      "2단계: 중간 계산 과정 및 핵심 정리 적용",
+      "3단계: 최종 대입 및 정답 도출"
+    ],
+    "keyFormula": "이 문제에 쓰인 핵심 공식 및 자주 실수하는 함정 포인트 ($...$ 포함)"
+  }
+]`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userPrompt }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                if (!response.ok) throw new Error("Gemini Math API Error");
+
+                const result = await response.json();
+                const rawJson = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawJson) throw new Error("Empty Math AI Response");
+
+                generatedMathProblems = JSON.parse(rawJson);
+                generatedMathProblems.forEach((item, idx) => {
+                    item.uid = `math_${Date.now()}_${idx}`;
+                    item.category = selectedCat;
+                    item.type = 'math';
+                    item.explanation = Array.isArray(item.stepByStep) ? item.stepByStep.join('\n') : (item.stepByStep || '');
+                });
+
+                allMathSolutionsOpen = false;
+                showLoading(false);
+                showToast(`수학 응용문제 ${generatedMathProblems.length}문항 생성 완료!`, 'success');
+                renderMathResults();
+
+            } catch (err) {
+                console.error("Math generation failed:", err);
+                showLoading(false);
+                showToast("수학 응용문제 생성 중 오류가 발생했습니다. 수식 텍스트를 확인 후 다시 시도해 주세요.", 'error');
+            }
+        }
+
+        function renderMathResults() {
+            const container = document.getElementById('math-results-container');
+            const badge = document.getElementById('math-generated-badge');
+            const batchActions = document.getElementById('math-batch-actions');
+
+            badge.innerText = `${generatedMathProblems.length}문항`;
+            if (!generatedMathProblems.length) {
+                batchActions.classList.add('hidden');
+                return;
+            }
+            batchActions.classList.remove('hidden');
+
+            container.innerHTML = generatedMathProblems.map((m, idx) => {
+                const isBookmarked = bookmarkedQuestions.some(b => b.uid === m.uid);
+                const stepsHtml = Array.isArray(m.stepByStep)
+                    ? m.stepByStep.map(step => `<li class="leading-relaxed">${escapeHtml(step)}</li>`).join('')
+                    : `<li>${escapeHtml(m.stepByStep || '')}</li>`;
+
+                return `
+                    <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <!-- Top Meta Header -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="px-2.5 py-0.5 bg-sky-600 text-white font-extrabold text-[11px] rounded-lg">응용 Q${idx + 1}</span>
+                                <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-bold text-[11px] rounded-lg">${escapeHtml(m.conceptSummary || '핵심 응용')}</span>
+                            </div>
+                            <button onclick="bookmarkMathProblem(${idx})" class="text-base p-1 ${isBookmarked ? 'text-amber-400' : 'text-slate-300 hover:text-amber-400'} transition-colors" title="즐겨찾기 오답노트에 저장">
+                                <i class="fa-solid fa-star"></i>
+                            </button>
+                        </div>
+
+                        <!-- Variation Point Banner -->
+                        <div class="bg-sky-50/70 border border-sky-100 px-3.5 py-2.5 rounded-xl text-[11px] text-sky-900 flex items-start gap-2">
+                            <i class="fa-solid fa-shuffle text-sky-600 mt-0.5"></i>
+                            <div><span class="font-bold">변형 포인트:</span> ${escapeHtml(m.variationPoint || '숫자 및 조건 변형')}</div>
+                        </div>
+
+                        <!-- Math Problem Question -->
+                        <div class="text-slate-800 text-xs sm:text-sm font-bold leading-relaxed py-1">
+                            ${escapeHtml(m.question)}
+                        </div>
+
+                        <!-- User Practice Input Row -->
+                        <div class="flex flex-col sm:flex-row gap-2 pt-1">
+                            <input type="text" id="math-user-input-${idx}" placeholder="직접 계산한 정답을 입력해보세요..." class="flex-1 text-xs p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 outline-none bg-slate-50/50">
+                            <button onclick="toggleSingleMathSolution(${idx})" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 flex-shrink-0">
+                                <i class="fa-solid fa-lightbulb text-amber-300"></i>
+                                <span id="math-sol-btn-lbl-${idx}">정답 및 단계별 풀이</span>
+                            </button>
+                        </div>
+
+                        <!-- Toggleable Step-by-Step Solution Box -->
+                        <div id="math-solution-box-${idx}" class="hidden space-y-3 pt-3 border-t border-slate-100">
+                            <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-emerald-800"><i class="fa-solid fa-circle-check mr-1"></i> 최종 정답</span>
+                                <span class="text-sm font-black text-emerald-900">${escapeHtml(m.answer)}</span>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2">
+                                <p class="text-xs font-extrabold text-slate-800"><i class="fa-solid fa-stairs text-sky-600 mr-1"></i> 단계별 풀이 과정 (Step-by-Step)</p>
+                                <ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-700">
+                                    ${stepsHtml}
+                                </ol>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs text-amber-950 space-y-1">
+                                <p class="font-extrabold text-amber-800"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 핵심 공식 및 실수 함정 포인트</p>
+                                <p class="leading-relaxed">${escapeHtml(m.keyFormula || '')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderKaTeXInElement(container);
+        }
+
+        function toggleSingleMathSolution(idx) {
+            const box = document.getElementById(`math-solution-box-${idx}`);
+            const lbl = document.getElementById(`math-sol-btn-lbl-${idx}`);
+            if (!box) return;
+            box.classList.toggle('hidden');
+            const isHidden = box.classList.contains('hidden');
+            if (lbl) lbl.innerText = isHidden ? '정답 및 단계별 풀이' : '풀이 접기';
+            if (!isHidden) {
+                renderKaTeXInElement(box);
+            }
+        }
+
+        function toggleAllMathSolutions() {
+            allMathSolutionsOpen = !allMathSolutionsOpen;
+            generatedMathProblems.forEach((_, idx) => {
+                const box = document.getElementById(`math-solution-box-${idx}`);
+                const lbl = document.getElementById(`math-sol-btn-lbl-${idx}`);
+                if (box) {
+                    if (allMathSolutionsOpen) {
+                        box.classList.remove('hidden');
+                        if (lbl) lbl.innerText = '풀이 접기';
+                        renderKaTeXInElement(box);
+                    } else {
+                        box.classList.add('hidden');
+                        if (lbl) lbl.innerText = '정답 및 단계별 풀이';
+                    }
+                }
+            });
+        }
+
+        function bookmarkMathProblem(idx) {
+            const item = generatedMathProblems[idx];
+            if (!item) return;
+            const bookmarkPayload = {
+                uid: item.uid,
+                type: '단답형(수학)',
+                category: item.category || currentCategory,
+                question: item.question,
+                answer: item.answer,
+                explanation: `${item.variationPoint}\n[풀이]\n${item.explanation}\n[핵심공식] ${item.keyFormula}`
+            };
+            toggleBookmark(bookmarkPayload, item.category);
+            renderMathResults();
+        }
+
+        function convertMathToExam() {
+            if (!generatedMathProblems.length) return;
+            currentCategory = generatedMathProblems[0].category || currentCategory;
+            generatedExamData = generatedMathProblems.map((m, idx) => ({
+                id: idx + 1,
+                uid: m.uid,
+                category: m.category || currentCategory,
+                type: 'short',
+                question: m.question,
+                options: [],
+                answer: m.answer.replace(/\$/g, '').trim(),
+                explanation: `${m.explanation} (${m.keyFormula || ''})`
+            }));
+            renderExamView();
+            switchTab('tab-exam');
+            showToast("수학 응용문제가 실전 시험 응시 탭으로 전환되었습니다!", 'success');
+        }
+
+        function renderKaTeXInElement(el) {
+            if (!el || typeof renderMathInElement === 'undefined') return;
+            try {
+                renderMathInElement(el, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) {
+                console.warn('KaTeX render warning:', e);
+            }
+        }
+
+        // Custom Confirm Modal (No native confirm/alert)
+        function showConfirmModal(message, onConfirm) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgEl = document.getElementById('custom-confirm-msg');
+            const okBtn = document.getElementById('custom-confirm-ok');
+            const cancelBtn = document.getElementById('custom-confirm-cancel');
+
+            msgEl.innerText = message;
+            modal.classList.remove('hidden');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+            };
+
+            okBtn.onclick = () => {
+                cleanup();
+                if (typeof onConfirm === 'function') onConfirm();
+            };
+            cancelBtn.onclick = cleanup;
+        }
+
+        // Stats Update
+        function updateHistoryStats() {
+            document.getElementById('home-stat-exams').innerText = `${examHistory.length}회`;
+            document.getElementById('home-stat-bookmarks').innerText = `${bookmarkedQuestions.length}개`;
+
+            let totalQ = 0;
+            let totalCorrect = 0;
+            examHistory.forEach(h => {
+                totalQ += h.total;
+                totalCorrect += h.correct;
+            });
+
+            document.getElementById('home-stat-rate').innerText = totalQ > 0 ? `${Math.round((totalCorrect / totalQ) * 100)}%` : '0%';
+
+            const recentContainer = document.getElementById('home-recent-list');
+            if (!examHistory.length) {
+                recentContainer.innerHTML = `
+                    <div class="col-span-full bg-white p-8 rounded-2xl border border-slate-200/80 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300 block mb-2"></i>
+                        아직 응시한 시험이 없습니다.<br>PDF를 업로드하여 시험 문제를 만들어보세요!
+                    </div>
+                `;
+                return;
+            }
+
+            recentContainer.innerHTML = examHistory.slice(0, 3).map(item => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between text-xs">
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="text-[10px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded">${escapeHtml(item.category || '전공')}</span>
+                            <span class="text-[10px] text-slate-400">${item.date}</span>
+                        </div>
+                        <p class="text-slate-500 text-[11px]">총 ${item.total}문항 (논술 ${item.essayCount}개)</p>
+                    </div>
+                    <span class="font-black text-base text-indigo-600">${item.score}점</span>
+                </div>
+            `).join('');
+        }
+
+        // Utilities
+        function showLoading(show, title = "처리 중...", desc = "") {
+            const el = document.getElementById('loading-overlay');
+            if (show) {
+                document.getElementById('loading-status').innerText = title;
+                document.getElementById('loading-desc').innerText = desc;
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+
+            if (type === 'warning') icon.className = "fa-solid fa-triangle-exclamation text-amber-400";
+            else if (type === 'error') icon.className = "fa-solid fa-circle-xmark text-rose-400";
+            else if (type === 'success') icon.className = "fa-solid fa-circle-check text-emerald-400";
+            else icon.className = "fa-solid fa-circle-info text-indigo-400";
+
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0', '-translate-y-4');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+            }, 3500);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function resetApp() {
+            showConfirmModal("앱 세션을 초기화하시겠습니까? (업로드 문서 및 풀이중인 답안 초기화)", () => {
+                uploadedFiles = [];
+                mathUploadedFiles = [];
+                renderFileList();
+                renderMathFileList();
+                document.getElementById('direct-text').value = '';
+                document.getElementById('math-direct-text').value = '';
+                switchTab('tab-home');
+                showToast("초기화되었습니다.", 'info');
+            });
+        }
+    </script>
+</body>
+</html>
